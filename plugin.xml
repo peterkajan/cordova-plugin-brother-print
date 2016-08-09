@@ -12,7 +12,7 @@
     </description>
 
     <repo>
-        https://github.com/katzer/cordova-plugin-printer.git
+        https://github.com/peterkajan/cordova-plugin-brother-print
     </repo>
 
     <keywords>
@@ -44,6 +44,5 @@
 
         <header-file src="src/ios/APPPrinter.h" />
         <source-file src="src/ios/APPPrinter.m" />
-
     </platform>
 </plugin>
