@@ -29,7 +29,7 @@
     </engines>
 
     <!-- interface -->
-    <js-module src="www/printer.js" name="Printer">
+    <js-module src="www/printer.js" name="BrotherPrinter">
         <clobbers target="plugin.brohterPrint" />
         <clobbers target="cordova.plugins.brohterPrint" />
     </js-module>
@@ -37,7 +37,7 @@
     <!-- ios -->
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
-            <feature name="Brother Printer">
+            <feature name="BrotherPrinter">
                 <param name="ios-package" value="APPPrinter"/>
             </feature>
         </config-file>

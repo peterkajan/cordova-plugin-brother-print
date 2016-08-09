@@ -33,7 +33,7 @@ exports.getDefaults = function () {
 exports.isAvailable = function (callback, scope) {
     var fn = this._createCallbackFn(callback);
 
-    exec(fn, null, 'Printer', 'isAvailable', []);
+    exec(fn, null, 'BrotherPrinter', 'isAvailable', []);
 };
 
 /**
@@ -46,7 +46,7 @@ exports.isAvailable = function (callback, scope) {
  */
 exports.getPrinterList = function (callback, scope) {
     var fn = this._createCallbackFn(callback);
-    exec(fn, null, 'Printer', 'getPrinterList', []);
+    exec(fn, null, 'BrotherPrinter', 'getPrinterList', []);
 };
 
 /**
@@ -64,7 +64,7 @@ exports.getPrinterList = function (callback, scope) {
  */
 exports.setPrinter = function (options, callback, scope) {
     fn = this._createCallbackFn(callback);
-    exec(fn, null, 'Printer', 'setPrinter', [options]);
+    exec(fn, null, 'BrotherPrinter', 'setPrinter', [options]);
 };
 
 /**
@@ -101,7 +101,7 @@ exports.print = function (content, options, callback, errorCallback, scope) {
         params.name = this.DEFAULT_DOC_NAME;
     }
 
-    exec(fn, errorFn, 'Printer', 'print', [page, params]);
+    exec(fn, errorFn, 'BrotherPrinter', 'print', [page, params]);
 };
 
 /**
