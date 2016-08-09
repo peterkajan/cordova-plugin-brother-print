@@ -1,26 +1,9 @@
-/*
- Copyright 2013-2014 appPlant UG
-
- Licensed to the Apache Software Foundation (ASF) under one
- or more contributor license agreements.  See the NOTICE file
- distributed with this work for additional information
- regarding copyright ownership.  The ASF licenses this file
- to you under the Apache License, Version 2.0 (the
- "License"); you may not use this file except in compliance
- with the License.  You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing,
- software distributed under the License is distributed on an
- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- KIND, either express or implied.  See the License for the
- specific language governing permissions and limitations
- under the License.
- */
-
 #import "APPPrinter.h"
 #import <Cordova/CDVAvailability.h>
+#import <BRPtouchPrinterKit/BRPtouchPrintInfo.h>
+#import <BRPtouchPrinterKit/BRPtouchPrinter.h>
+#import <BRPtouchPrinterKit/BRPtouchNetworkInfo.h>
+
 
 @interface APPPrinter ()
 
@@ -30,6 +13,11 @@
 
 
 @implementation APPPrinter
+
+
+int FONT_SIZE_LARGE = 74;
+int FONT_SIZE_MEDIUM = 60;
+int FONT_SIZE_SMALL = 50;
 
 /*
  * Checks if the printing service is available.
@@ -41,8 +29,7 @@
 {
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* pluginResult;
-        BOOL isAvailable = [self isPrintingAvailable];
-
+        BOOL isAvailable = ptp != nil && [ptp isPrinterReady];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                            messageAsBool:isAvailable];
 
@@ -51,228 +38,223 @@
     }];
 }
 
-/**
- * Sends the printing content to the printer controller and opens them.
+/*
+ * Finds list of available printers.
  *
- * @param {NSString} content
- *      The (HTML encoded) content
+ * @param {Function} callback
+ *      A callback function to be called with the result
  */
-- (void) print:(CDVInvokedUrlCommand*)command
+- (void) getPrinterList:(CDVInvokedUrlCommand*)command
 {
-    if (!self.isPrintingAvailable) {
-        return;
+    actCommand = command;
+    self.searchPrinters;
+}
+
+
+/*
+ * Sets printer that will be used for printing
+ *
+ */
+- (void) setPrinter:(CDVInvokedUrlCommand*) invokedCommand {
+    NSArray*  arguments = [invokedCommand arguments];
+    NSMutableDictionary* settings = [arguments objectAtIndex:0];
+
+    BRPtouchPrintInfo* printInfo;
+    printInfo = [[BRPtouchPrintInfo alloc] init];
+    printInfo.strPaperName = @"62mm x 29mm";
+    printInfo.nPrintMode = PRINT_ORIGINAL;
+    printInfo.nDensity = 0;
+    printInfo.nOrientation = ORI_PORTRATE;
+    printInfo.nHalftone = HALFTONE_ERRDIF;
+    printInfo.nHorizontalAlign = ALIGN_CENTER;
+    printInfo.nVerticalAlign = ALIGN_TOP;
+    printInfo.nPaperAlign = PAPERALIGN_LEFT;
+    printInfo.nAutoCutFlag = 1;
+    printInfo.nAutoCutCopies = 1;
+
+    //	BRPtouchPrinter Class initialize (Release will be done in [dealloc])
+    ptp = [[BRPtouchPrinter alloc] initWithPrinterName:[settings objectForKey:@"name"]];
+    [ptp setPrintInfo:printInfo];
+    [ptp setIPAddress:[settings objectForKey:@"ipAddress"]];
+
+    CDVPluginResult* pluginResult;
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult
+                                callbackId:invokedCommand.callbackId];
+}
+
+
+/*
+ * Prints text
+ *
+ */
+- (BOOL) print:(CDVInvokedUrlCommand*) invokedCommand {
+    if (ptp == nil) {
+        NSLog(@"Printer not set");
+        return NO;
     }
-
-    _callbackId = command.callbackId;
-
-    NSArray*  arguments           = [command arguments];
-    NSString* content             = [arguments objectAtIndex:0];
+    NSArray*  arguments = [invokedCommand arguments];
     NSMutableDictionary* settings = [arguments objectAtIndex:1];
 
-    UIPrintInteractionController* controller = [self printController];
-
-    NSString* printerId = [settings objectForKey:@"printerId"];
-
-    [self adjustPrintController:controller withSettings:settings];
-    [self loadContent:content intoPrintController:controller];
-
-    if (printerId) {
-        [self sendToPrinter:controller printer:printerId];
-    }
-    else {
-        CGRect rect = [self convertIntoRect:[settings objectForKey:@"bounds"]];
-
-        [self presentPrintController:controller fromRect:rect];
-    }
+    [self.commandDelegate runInBackground:^{
+        [self _print:settings command:invokedCommand];
+    }];
+    return YES;
 }
 
-/**
- * Retrieves an instance of shared print controller.
- *
- * @return {UIPrintInteractionController*}
- */
-- (UIPrintInteractionController*) printController
+
+- (void) searchPrinters
 {
-    return [UIPrintInteractionController sharedPrintController];
+    ptn = [[BRPtouchNetwork alloc] init];
+    ptn.delegate = self;
+
+    NSArray *printerList = [NSArray arrayWithObjects:@"Brother QL-720NW", nil];
+    [ptn setPrinterNames:printerList];
+    [ptn startSearch: 5.0];
 }
 
-/**
- * Adjusts the settings for the print controller.
- *
- * @param {UIPrintInteractionController} controller
- *      The print controller instance
- *
- * @return {UIPrintInteractionController} controller
- *      The modified print controller instance
- */
-- (UIPrintInteractionController*) adjustPrintController:(UIPrintInteractionController*)controller
-                                           withSettings:(NSMutableDictionary*)settings
-{
-    UIPrintInfo* printInfo             = [UIPrintInfo printInfo];
-    UIPrintInfoOrientation orientation = UIPrintInfoOrientationPortrait;
-    UIPrintInfoOutputType outputType   = UIPrintInfoOutputGeneral;
 
-    if ([[settings objectForKey:@"landscape"] boolValue]) {
-        orientation = UIPrintInfoOrientationLandscape;
+- (int) getPrimaryFontSize:(NSUInteger) length
+{
+    if (length < 14) {
+        return FONT_SIZE_LARGE;
     }
-
-    if ([[settings objectForKey:@"graystyle"] boolValue]) {
-        outputType = UIPrintInfoOutputGrayscale;
+    if (length < 17) {
+        return FONT_SIZE_MEDIUM;
     }
-
-    printInfo.outputType  = outputType;
-    printInfo.orientation = orientation;
-    printInfo.jobName     = [settings objectForKey:@"name"];
-    printInfo.duplex      = [[settings objectForKey:@"duplex"] boolValue];
-
-    controller.printInfo      = printInfo;
-    controller.showsPageRange = NO;
-
-    return controller;
+    return FONT_SIZE_SMALL;
 }
 
-/**
- * Adjusts the web view and page renderer.
- */
-- (void) adjustWebView:(UIWebView*)page
-  andPrintPageRenderer:(UIPrintPageRenderer*)renderer
+
+- (int) getSecondaryFontSize:(NSUInteger) length
 {
-    UIViewPrintFormatter* formatter = [page viewPrintFormatter];
-    // margin not required - done in web page
-    formatter.contentInsets = UIEdgeInsetsMake(0.0f, 0.0f, 0.0f, 0.0f);
-
-    renderer.headerHeight = -30.0f;
-    renderer.footerHeight = -30.0f;
-    [renderer addPrintFormatter:formatter startingAtPageAtIndex:0];
-
-    page.scalesPageToFit        = YES;
-    page.dataDetectorTypes      = UIDataDetectorTypeNone;
-    page.userInteractionEnabled = NO;
-    page.autoresizingMask       = (UIViewAutoresizingFlexibleWidth |
-                                   UIViewAutoresizingFlexibleHeight);
-}
-
-/**
- * Loads the content into the print controller.
- *
- * @param {NSString} content
- *      The (HTML encoded) content
- * @param {UIPrintInteractionController} controller
- *      The print controller instance
- */
-- (void) loadContent:(NSString*)content intoPrintController:(UIPrintInteractionController*)controller
-{
-    UIWebView* page               = [[UIWebView alloc] init];
-    UIPrintPageRenderer* renderer = [[UIPrintPageRenderer alloc] init];
-
-    [self adjustWebView:page andPrintPageRenderer:renderer];
-
-    if ([NSURL URLWithString:content]) {
-        NSURL *url = [NSURL URLWithString:content];
-
-        [page loadRequest:[NSURLRequest requestWithURL:url]];
+    if (length < 18) {
+        return FONT_SIZE_MEDIUM;
     }
-    else {
-        // Set the base URL to be the www directory.
-        NSString* wwwFilePath = [[NSBundle mainBundle] pathForResource:@"www"
-                                                                ofType:nil];
-        NSURL* baseURL        = [NSURL fileURLWithPath:wwwFilePath];
-
-
-        [page loadHTMLString:content baseURL:baseURL];
-    }
-
-    controller.printPageRenderer = renderer;
+    return FONT_SIZE_SMALL;
 }
 
-/**
- * Opens the print controller so that the user can choose between
- * available iPrinters.
- *
- * @param {UIPrintInteractionController} controller
- *      The prepared print controller with a content
- */
-- (void) presentPrintController:(UIPrintInteractionController*)controller
-                       fromRect:(CGRect)rect
+
+- (void) drawLine:(NSString*) text
+           toRect:(CGRect)    rect
+         fontSize:(int)       fontSize
+       fontWeight:(float)     fontWeight
 {
-    if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        [controller presentFromRect:rect inView:self.webView animated:YES completionHandler:
-         ^(UIPrintInteractionController *ctrl, BOOL ok, NSError *e) {
-             CDVPluginResult* pluginResult =
-             [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-
-             [self.commandDelegate sendPluginResult:pluginResult
-                                         callbackId:_callbackId];
-         }];
-    }
-    else {
-        [controller presentAnimated:YES completionHandler:
-         ^(UIPrintInteractionController *ctrl, BOOL ok, NSError *e) {
-             CDVPluginResult* pluginResult =
-             [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-
-             [self.commandDelegate sendPluginResult:pluginResult
-                                         callbackId:_callbackId];
-         }];
-    }
+    UIFont *font = [UIFont systemFontOfSize:fontSize weight:fontWeight];
+    NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    paragraphStyle.lineBreakMode = NSLineBreakByTruncatingTail;
+    paragraphStyle.alignment = NSTextAlignmentCenter;
+    NSDictionary *attributes = @{ NSFontAttributeName: font,
+                                  NSParagraphStyleAttributeName: paragraphStyle };
+    [text drawInRect:rect withAttributes:attributes];
 }
 
-/**
- * Sends the content directly to the specified printer.
- *
- * @param controller
- *      The prepared print controller with the content
- * @param printer
- *      The printer specified by its URL
- */
-- (void) sendToPrinter:(UIPrintInteractionController*)controller
-               printer:(NSString*)printerId
+
+- (UIImage*) drawText:(NSMutableDictionary*) settings
 {
-    NSURL* url         = [NSURL URLWithString:printerId];
-    UIPrinter* printer = [UIPrinter printerWithURL:url];
+    NSString* text1 = [settings objectForKey:@"text1"];
+    NSString* text2 = [settings objectForKey:@"text2"];
+    NSString* text3 = [settings objectForKey:@"text3"];
 
-    [controller printToPrinter:printer completionHandler:
-     ^(UIPrintInteractionController *ctrl, BOOL ok, NSError *e) {
-         CDVPluginResult* pluginResult =
-         [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    CGSize size = CGSizeMake(620, 270);
+    // uncoment to use the not sticky paper
+    // int offsetLeft = 100;
+    int offsetLeft = 0;
+    UIGraphicsBeginImageContext(size);
+    [[UIColor blackColor] set];
 
-         [self.commandDelegate sendPluginResult:pluginResult
-                                     callbackId:_callbackId];
-     }];
+    [self drawLine:text1 toRect:CGRectMake(offsetLeft, 0, size.width - offsetLeft, 90) fontSize:[self getPrimaryFontSize:text1.length] fontWeight:UIFontWeightHeavy];
+    [self drawLine:text2 toRect:CGRectMake(offsetLeft, 90, size.width - offsetLeft, 90) fontSize:[self getPrimaryFontSize:text2.length] fontWeight:UIFontWeightHeavy];
+    [self drawLine:text3 toRect:CGRectMake(offsetLeft, 190, size.width - offsetLeft, 80) fontSize:[self getSecondaryFontSize:text3.length] fontWeight:UIFontWeightBold];
+
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return newImage;
 }
 
-/**
- * Convert Array into Rect object.
- *
- * @param bounds
- *      The bounds
- *
- * @return
- *      A converted Rect object
- */
-- (CGRect) convertIntoRect:(NSArray*)bounds
-{
-    return CGRectMake([[bounds objectAtIndex:0] floatValue],
-                      [[bounds objectAtIndex:1] floatValue],
-                      [[bounds objectAtIndex:2] floatValue],
-                      [[bounds objectAtIndex:3] floatValue]);
-}
 
 /**
- * Checks either the printing service is avaible or not.
- *
- * @return {BOOL}
+ * Sends the printing content to the printer controller and opens them.
  */
-- (BOOL) isPrintingAvailable
+- (BOOL) _print: (NSMutableDictionary*) settings
+        command: (CDVInvokedUrlCommand*) invokedCommand
 {
-    Class controllerCls = NSClassFromString(@"UIPrintInteractionController");
+    UIImage *newImage = [self drawText:settings];
+    CGImageRef imgRef = [newImage CGImage];
 
-    if (!controllerCls) {
+    if (nil == imgRef) {
+        NSLog(@"NIL");
         return NO;
     }
 
-    return [self printController] && [UIPrintInteractionController
-                                      isPrintingAvailable];
+    // Do print
+    NSString* resultStr;
+    BOOL error = NO;
+    if ([ptp isPrinterReady]) {
+        NSLog(@"Ready");
+        int result = [ptp printImage:imgRef copy:1 timeout:10];
+
+        if (result <= 0) {
+            NSLog(@"Result: %d", result);
+            resultStr = @"error_other";
+            error = YES;
+        }
+        else {
+            NSLog(@"Print successful");
+        }
+    }
+    else {
+        NSLog(@"Not ready");
+        resultStr = @"error_notready";
+        error = YES;
+    }
+
+    CDVPluginResult* pluginResult;
+    if (!error) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    }
+    else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                        messageAsString:resultStr];
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult
+                                callbackId:invokedCommand.callbackId];
+    return YES;
+}
+
+-(void)didFinishedSearch:(id)sender
+{
+    NSMutableArray* aryListData = (NSMutableArray*)[ptn getPrinterNetInfo];
+
+    BRPtouchPrintInfo* printInfo;
+    printInfo = [[BRPtouchPrintInfo alloc] init];
+    printInfo.strPaperName = @"62mm x 29mm";
+    printInfo.nPrintMode = PRINT_ORIGINAL;
+    printInfo.nDensity = 0;
+    printInfo.nOrientation = ORI_PORTRATE;
+    printInfo.nHalftone = HALFTONE_ERRDIF;
+    printInfo.nHorizontalAlign = ALIGN_CENTER;
+    printInfo.nVerticalAlign = ALIGN_TOP;
+    printInfo.nPaperAlign = PAPERALIGN_LEFT;
+    printInfo.nAutoCutFlag = 1;
+    printInfo.nAutoCutCopies = 1;
+
+    NSMutableArray *printers =[NSMutableArray arrayWithObjects: nil];
+    for (BRPtouchNetworkInfo* bpni in aryListData) {
+        NSMutableDictionary* printerDict = [NSMutableDictionary dictionaryWithCapacity:2];
+        [printerDict setObject:bpni.strModelName forKey:@"name"];
+        [printerDict setObject:bpni.strIPAddress forKey:@"ipAddress"];
+        [printers addObject:printerDict];
+    }
+
+    CDVPluginResult* pluginResult;
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                      messageAsArray:printers];
+
+    [self.commandDelegate sendPluginResult:pluginResult
+                                callbackId:actCommand.callbackId];
 }
 
 @end

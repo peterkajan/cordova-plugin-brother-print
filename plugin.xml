@@ -29,7 +29,7 @@
     </engines>
 
     <!-- interface -->
-    <js-module src="www/printer.js" name="Brother Printer">
+    <js-module src="www/printer.js" name="Printer">
         <clobbers target="plugin.brohterPrint" />
         <clobbers target="cordova.plugins.brohterPrint" />
     </js-module>
