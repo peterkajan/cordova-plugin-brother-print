@@ -2,14 +2,13 @@
 
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="de.appplant.cordova.plugin.printer"
-        version="0.7.1">
+        id="sk.entropia.brother-print"
+        version="0.0.1">
 
-    <name>Printer</name>
+    <name>Brother QL-720NW Printer</name>
 
     <description>
-        Cordova plugin to print HTML documents using AirPrint
-        and Android Printing Framework.
+        Cordova plugin to print HTML documents using Brother print SDK to QL-720NW printer.
     </description>
 
     <repo>
@@ -17,12 +16,12 @@
     </repo>
 
     <keywords>
-        print, printer, ios, android, google cloud, air print
+        print, printer, ios, QL-720NW, Brother,
     </keywords>
 
     <license>Apache 2.0</license>
 
-    <author>Sebastián Katzer</author>
+    <author>Peter Kajan</author>
 
     <!-- cordova -->
     <engines>
@@ -30,15 +29,15 @@
     </engines>
 
     <!-- interface -->
-    <js-module src="www/printer.js" name="Printer">
-        <clobbers target="plugin.printer" />
-        <clobbers target="cordova.plugins.printer" />
+    <js-module src="www/printer.js" name="Brother Printer">
+        <clobbers target="plugin.brohter-print" />
+        <clobbers target="cordova.plugins.brother-print" />
     </js-module>
 
     <!-- ios -->
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
-            <feature name="Printer">
+            <feature name="Brother Printer">
                 <param name="ios-package" value="APPPrinter"/>
             </feature>
         </config-file>
@@ -46,16 +45,5 @@
         <header-file src="src/ios/APPPrinter.h" />
         <source-file src="src/ios/APPPrinter.m" />
 
-    </platform>
-
-    <!-- android -->
-    <platform name="android">
-        <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="Printer">
-                <param name="android-package" value="de.appplant.cordova.plugin.printer.Printer"/>
-            </feature>
-        </config-file>
-
-        <source-file src="src/android/Printer.java" target-dir="src/de/appplant/cordova/plugin/printer" />
     </platform>
 </plugin>

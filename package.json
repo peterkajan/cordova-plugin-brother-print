@@ -1,12 +1,11 @@
 {
-  "name": "de.appplant.cordova.plugin.printer",
-  "version": "0.7.3",
-  "description": "Cordova plugin to print HTML documents using AirPrint and Android Printing Framework.",
+  "name": "sk.entropia.brother-print",
+  "version": "0.0.1",
+  "description": "Cordova plugin to print HTML documents using Brother print SDK to QL-720NW printer.",
   "cordova": {
-    "id": "de.appplant.cordova.plugin.printer",
+    "id": "sk.entropia.brother-print",
     "platforms": [
       "ios",
-      "android"
     ]
   },
   "repository": {
@@ -14,16 +13,13 @@
     "url": "https://github.com/citylims/cordova-plugin-printer.git"
   },
   "keywords": [
-    "appplant",
     "print",
     "printer",
     "ios",
-    "android",
-    "google cloud",
-    "air print",
+    "brother",
     "ecosystem:cordova",
     "cordova-ios",
-    "cordova-android"
+    "QL-720NW",
   ],
   "engines": [
     {
@@ -31,7 +27,7 @@
       "version": ">=3.0.0"
     }
   ],
-  "author": "Sebastián Katzer",
+  "author": "Peter Kajan",
   "license": "Apache 2.0",
   "bugs": {
     "url": "https://github.com/katzer/cordova-plugin-printer/issues"
