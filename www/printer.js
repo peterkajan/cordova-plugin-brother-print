@@ -1,4 +1,4 @@
-cordova.define("de.appplant.cordova.plugin.printer.Printer", function(require, exports, module) {
+cordova.define("sk.entropia.cordova.brother-print.Printer", function(require, exports, module) {
 /*
     Copyright 2013-2014 appPlant UG
 

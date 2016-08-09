@@ -2,7 +2,7 @@
 
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="sk.entropia.brother-print"
+        id="sk.entropia.cordova.brother-print"
         version="0.0.1">
 
     <name>Brother QL-720NW Printer</name>
@@ -30,8 +30,8 @@
 
     <!-- interface -->
     <js-module src="www/printer.js" name="Brother Printer">
-        <clobbers target="plugin.brohter-print" />
-        <clobbers target="cordova.plugins.brother-print" />
+        <clobbers target="plugin.brohterPrint" />
+        <clobbers target="cordova.plugins.brohterPrint" />
     </js-module>
 
     <!-- ios -->
