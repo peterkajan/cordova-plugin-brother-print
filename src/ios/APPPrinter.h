@@ -3,7 +3,7 @@
 #import <BRPtouchPrinterKit/BRPtouchNetwork.h>
 #import <BRPtouchPrinterKit/BRPtouchPrinter.h>
 
-@interface APPPrinter : CDVPlugin
+@interface APPPrinter : CDVPlugin <BRPtouchNetworkDelegate>
 {
     BRPtouchNetwork* ptn;
     BRPtouchPrinter* ptp;

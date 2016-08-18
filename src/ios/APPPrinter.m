@@ -47,7 +47,7 @@ int FONT_SIZE_SMALL = 50;
 - (void) getPrinterList:(CDVInvokedUrlCommand*)command
 {
     actCommand = command;
-    self.searchPrinters;
+    [self searchPrinters];
 }
 
 
@@ -241,7 +241,7 @@ int FONT_SIZE_SMALL = 50;
     printInfo.nAutoCutFlag = 1;
     printInfo.nAutoCutCopies = 1;
 
-    NSMutableArray *printers =[NSMutableArray arrayWithObjects: nil];
+    NSMutableArray *printers =[NSMutableArray array];
     for (BRPtouchNetworkInfo* bpni in aryListData) {
         NSMutableDictionary* printerDict = [NSMutableDictionary dictionaryWithCapacity:2];
         [printerDict setObject:bpni.strModelName forKey:@"name"];
