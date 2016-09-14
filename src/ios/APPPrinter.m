@@ -129,17 +129,41 @@ int FONT_SIZE_SMALL = 50;
 }
 
 
+- (int) getTextWidth:(NSString*) text
+            fontSize:(int) fontSize
+          fontWeight:(float) fontWeight
+{
+    return [text sizeWithAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:fontSize weight:fontWeight]}].width;
+}
+
+
+
 - (int) getMaximumFontSize:(NSString*) text
                   maxWidth:(int) maxWidth
            largestFontSize:(int) largestFontSize
                 fontWeight:(float) fontWeight
 {
-    while ([text sizeWithAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:largestFontSize weight:fontWeight]}].width > maxWidth)
+    while ([self getTextWidth:text fontSize:largestFontSize fontWeight:fontWeight] > maxWidth)
     {
         largestFontSize -= 10;
     }
     return largestFontSize;
 }
+
+
+- (void) _drawLine:(NSString*) text
+            toRect:(CGRect)    rect
+              font:(UIFont*) font
+         alignment:(NSTextAlignment) alignment
+{
+    NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    paragraphStyle.lineBreakMode = NSLineBreakByTruncatingTail;
+    paragraphStyle.alignment = alignment;
+    NSDictionary *attributes = @{ NSFontAttributeName: font,
+                                  NSParagraphStyleAttributeName: paragraphStyle };
+    [text drawInRect:rect withAttributes:attributes];
+}
+
 
 
 - (void) drawLine:(NSString*) text
@@ -150,13 +174,20 @@ int FONT_SIZE_SMALL = 50;
 {
     fontSize = [self getMaximumFontSize:text maxWidth:rect.size.width largestFontSize:fontSize fontWeight:fontWeight];
     UIFont *font = [UIFont systemFontOfSize:fontSize weight:fontWeight];
-    NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    paragraphStyle.lineBreakMode = NSLineBreakByTruncatingTail;
-    paragraphStyle.alignment = alignment;
-    NSDictionary *attributes = @{ NSFontAttributeName: font,
-                                  NSParagraphStyleAttributeName: paragraphStyle };
-    [text drawInRect:rect withAttributes:attributes];
+    [self _drawLine:text toRect:rect font:font alignment:alignment];
 }
+
+
+- (void) drawItalicLine:(NSString*) text
+                 toRect:(CGRect)    rect
+               fontSize:(int)       fontSize
+              alignment:(NSTextAlignment)     alignment
+{
+    fontSize = [self getMaximumFontSize:text maxWidth:rect.size.width largestFontSize:fontSize fontWeight:UIFontWeightSemibold];
+    UIFont *font = [UIFont italicSystemFontOfSize:fontSize];
+    [self _drawLine:text toRect:rect font:font alignment:alignment];
+}
+
 
 - (void) drawCenteredText:(NSString*) text
                    toRect:(CGRect)    rect
@@ -228,24 +259,36 @@ int FONT_SIZE_SMALL = 50;
 }
 
 
-- (UIImage*) drawQrCode:(NSMutableDictionary*) settings
+- (UIImage*) draw54_100_QrCode:(NSMutableDictionary*) settings
 {
     NSString* qrFilePath = [settings objectForKey:@"qrFile"];
     NSString* text1 = [settings objectForKey:@"text1"];
     NSString* text2 = [settings objectForKey:@"text2"];
     NSString* text3 = [settings objectForKey:@"text3"];
+    NSString* text4 = [settings objectForKey:@"text4"];
+    NSString* text5 = [settings objectForKey:@"text5"];
     UIImage *image = [UIImage imageWithContentsOfFile:qrFilePath];
 
     CGSize size = CGSizeMake(1000, 580);
     UIGraphicsBeginImageContext(size);
     [[UIColor blackColor] set];
-    // name
     int offsetLeft = 0;
-    int width = 500;
-    NSString* text = [NSString stringWithFormat:@"%@\n%@\n%@", text1, [text2 uppercaseString], text3];
 
-    [self drawCenteredText:text toRect:CGRectMake(offsetLeft, 0, width, 580) fontSize:FONT_SIZE_LARGE fontWeight:UIFontWeightBold];
-    [image drawInRect:CGRectMake(500, 40, 500, 500)];
+    // name
+    NSString* fullName = [NSString stringWithFormat:@"%@ %@", text1, [text2 uppercaseString]];
+    [self drawLine:fullName toRect:CGRectMake(offsetLeft, 40, size.width, 90) fontSize:FONT_SIZE_LARGE fontWeight:UIFontWeightBold alignment:NSTextAlignmentCenter];
+    // vertically centered text3
+    [self drawCenteredText:text3 toRect:CGRectMake(offsetLeft, 160, 580, 300) fontSize:FONT_SIZE_MEDIUM fontWeight:UIFontWeightRegular];
+    // text4 with bounding rectangle
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetLineWidth(context, 3.0f);
+    int text4Width = [self getTextWidth:text4 fontSize:FONT_SIZE_MEDIUM fontWeight:UIFontWeightRegular];
+    CGContextStrokeRect(context, CGRectMake(offsetLeft, 480, text4Width + 20, 80));
+    [self drawLine:text4 toRect:CGRectMake(offsetLeft + 10, 480, 200, 80) fontSize:FONT_SIZE_MEDIUM fontWeight:UIFontWeightRegular alignment:NSTextAlignmentLeft];
+    // italic text5
+    [self drawItalicLine:text5 toRect:CGRectMake(200, 480, 380, 80) fontSize:FONT_SIZE_MEDIUM alignment:NSTextAlignmentCenter];
+    // QR Code
+    [image drawInRect:CGRectMake(600, 160, 400, 400)];
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return newImage;
@@ -286,8 +329,8 @@ int FONT_SIZE_SMALL = 50;
 {
     NSString* preset = [settings objectForKey:@"preset"];
     UIImage *newImage;
-    if ([preset isEqualToString:@"54_qrcode"]) {
-        newImage = [self drawQrCode:settings];
+    if ([preset isEqualToString:@"54_100_qrcode"]) {
+        newImage = [self draw54_100_QrCode:settings];
     }
     else if ([preset isEqualToString:@"29_90"]){
         newImage = [self draw29_90:settings];
