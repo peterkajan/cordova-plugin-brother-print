@@ -151,7 +151,7 @@ int FONT_SIZE_SMALL = 50;
 {
     while ([self getTextWidth:text fontSize:largestFontSize fontWeight:fontWeight] > maxWidth)
     {
-        largestFontSize -= 10;
+        largestFontSize -= 5;
     }
     return largestFontSize;
 }
@@ -356,6 +356,25 @@ int FONT_SIZE_SMALL = 50;
     return newImage;
 }
 
+- (UIImage*) draw17_54:(NSMutableDictionary*) settings
+{
+    NSString* text1 = [settings objectForKey:@"text1"];
+    NSString* text2 = [settings objectForKey:@"text2"];
+
+    CGSize size = CGSizeMake(510, 160);
+    UIGraphicsBeginImageContext(size);
+    [[UIColor blackColor] set];
+
+    NSString* fullName = [NSString stringWithFormat:@"%@ %@", text1, text2];
+    [self drawLine:text1 toRect:CGRectMake(0, 0, size.width, 80) fontSize:FONT_SIZE_LARGE-6 fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
+    [self drawLine:text2 toRect:CGRectMake(0, 80, size.width, 80) fontSize:FONT_SIZE_LARGE-6 fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
+
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return newImage;
+}
+
 
 - (UIImage*) draw62_html:(NSMutableDictionary*) settings
                  command:(CDVInvokedUrlCommand*) invokedCommand
@@ -439,6 +458,9 @@ int FONT_SIZE_SMALL = 50;
     }
     else if ([preset isEqualToString:@"62_29_5fields"]){
         newImage = [self draw62_29_5fields:settings];
+    }
+    else if ([preset isEqualToString:@"17_54"]){
+        newImage = [self draw17_54:settings];
     }
     else if ([preset isEqualToString:@"62_html"]){
         newImage = [self draw62_html:settings command:invokedCommand];
