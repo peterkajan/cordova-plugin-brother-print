@@ -15,6 +15,7 @@
 @implementation APPPrinter
 
 
+int FONT_SIZE_XLARGE = 94;
 int FONT_SIZE_LARGE = 74;
 int FONT_SIZE_MEDIUM = 60;
 int FONT_SIZE_SMALL = 50;
@@ -274,6 +275,28 @@ int FONT_SIZE_SMALL = 50;
     return newImage;
 }
 
+
+- (UIImage*) draw38_90:(NSMutableDictionary*) settings
+{
+    NSString* text1 = [settings objectForKey:@"text1"];
+    NSString* text2 = [settings objectForKey:@"text2"];
+    NSString* text3 = [settings objectForKey:@"text3"];
+
+    CGSize size = CGSizeMake(870, 390);
+    UIGraphicsBeginImageContext(size);
+    [[UIColor blackColor] set];
+
+    [self drawLine:text1 toRect:CGRectMake(0, 30, size.width, 150) fontSize:FONT_SIZE_XLARGE fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
+    [self drawLine:text2 toRect:CGRectMake(0, 150, size.width, 270) fontSize:FONT_SIZE_XLARGE fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
+    [self drawLine:text3 toRect:CGRectMake(0, 290, size.width, 390) fontSize:FONT_SIZE_LARGE fontWeight:UIFontWeightBold alignment:NSTextAlignmentCenter];
+
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return newImage;
+}
+
+
 - (void) drawStupidText4:(NSString*) text
            toRect:(CGRect)    rect
          fontSize:(int)       fontSize
@@ -458,6 +481,9 @@ int FONT_SIZE_SMALL = 50;
     }
     else if ([preset isEqualToString:@"62_29_5fields"]){
         newImage = [self draw62_29_5fields:settings];
+    }
+    else if ([preset isEqualToString:@"38_90"]){
+        newImage = [self draw38_90:settings];
     }
     else if ([preset isEqualToString:@"17_54"]){
         newImage = [self draw17_54:settings];
