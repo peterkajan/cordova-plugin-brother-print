@@ -1,6 +1,6 @@
 {
   "name": "sk.entropia.cordova.brother-print",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Cordova plugin to print HTML documents using Brother print SDK to QL-720NW printer.",
   "cordova": {
     "id": "sk.entropia.cordova.brother-print",
