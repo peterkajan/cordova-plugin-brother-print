@@ -46,5 +46,6 @@
         <source-file src="src/ios/APPPrinter.m" />
         <resource-file src="res/ios/bsq72wad.ptd" target="Res/bsq72wad.ptd" />
         <framework src="res/ios/BRPtouchPrinterKit.framework" custom="true"/>
+        <framework src="SystemConfiguration.framework" />
     </platform>
 </plugin>
