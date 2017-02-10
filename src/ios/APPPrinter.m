@@ -388,9 +388,47 @@ int FONT_SIZE_SMALL = 50;
     UIGraphicsBeginImageContext(size);
     [[UIColor blackColor] set];
 
-    NSString* fullName = [NSString stringWithFormat:@"%@ %@", text1, text2];
     [self drawLine:text1 toRect:CGRectMake(0, 0, size.width, 80) fontSize:FONT_SIZE_LARGE-6 fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
     [self drawLine:text2 toRect:CGRectMake(0, 80, size.width, 80) fontSize:FONT_SIZE_LARGE-6 fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
+
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return newImage;
+}
+
+- (UIImage*) draw17_87:(NSMutableDictionary*) settings
+{
+    NSString* text1 = [settings objectForKey:@"text1"];
+    NSString* text2 = [settings objectForKey:@"text2"];
+    NSString* text3 = [settings objectForKey:@"text3"];
+
+    CGSize size = CGSizeMake(810, 160);
+    UIGraphicsBeginImageContext(size);
+    [[UIColor blackColor] set];
+
+    NSString* fullName = [NSString stringWithFormat:@"%@ %@", text1, text2];
+    [self drawLine:fullName toRect:CGRectMake(0, 0, size.width, 80) fontSize:FONT_SIZE_LARGE-6 fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
+    [self drawLine:text3 toRect:CGRectMake(0, 80, size.width, 80) fontSize:FONT_SIZE_LARGE-6 fontWeight:UIFontWeightMedium alignment:NSTextAlignmentCenter];
+
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return newImage;
+}
+
+- (UIImage*) draw62_2fields:(NSMutableDictionary*) settings
+{
+    // TODO dymanic fields
+    NSString* text1 = [settings objectForKey:@"text2"];
+    NSString* text2 = [settings objectForKey:@"text3"];
+
+    CGSize size = CGSizeMake(680, 100);
+    UIGraphicsBeginImageContext(size);
+    [[UIColor blackColor] set];
+
+    [self drawLine:text1 toRect:CGRectMake(0, 0, size.width, 50) fontSize:FONT_SIZE_SMALL fontWeight:UIFontWeightBold alignment:NSTextAlignmentCenter];
+    [self drawLine:text2 toRect:CGRectMake(0, 50, size.width, 100) fontSize:FONT_SIZE_SMALL fontWeight:UIFontWeightBold alignment:NSTextAlignmentCenter];
 
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
@@ -487,6 +525,12 @@ int FONT_SIZE_SMALL = 50;
     }
     else if ([preset isEqualToString:@"17_54"]){
         newImage = [self draw17_54:settings];
+    }
+    else if ([preset isEqualToString:@"17_87"]){
+        newImage = [self draw17_87:settings];
+    }
+    else if ([preset isEqualToString:@"62_2fields"]) {
+        newImage = [self draw62_2fields:settings];
     }
     else if ([preset isEqualToString:@"62_html"]){
         newImage = [self draw62_html:settings command:invokedCommand];
