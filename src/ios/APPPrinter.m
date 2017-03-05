@@ -296,6 +296,28 @@ int FONT_SIZE_SMALL = 50;
     return newImage;
 }
 
+- (UIImage*) draw38_90_4fields:(NSMutableDictionary*) settings
+{
+    NSString* text1 = [settings objectForKey:@"text1"];
+    NSString* text2 = [settings objectForKey:@"text2"];
+    NSString* text3 = [settings objectForKey:@"text3"];
+    NSString* text4 = [settings objectForKey:@"text4"];
+
+    CGSize size = CGSizeMake(870, 390);
+    UIGraphicsBeginImageContext(size);
+    [[UIColor blackColor] set];
+
+    NSString* text12 = [NSString stringWithFormat:@"%@ %@", text1, text2];
+    [self drawLine:text12 toRect:CGRectMake(0, 30, size.width, 150) fontSize:FONT_SIZE_XLARGE fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
+    [self drawLine:text3 toRect:CGRectMake(0, 150, size.width, 270) fontSize:FONT_SIZE_XLARGE fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentCenter];
+    [self drawLine:text4 toRect:CGRectMake(0, 290, size.width, 390) fontSize:FONT_SIZE_LARGE fontWeight:UIFontWeightBold alignment:NSTextAlignmentCenter];
+
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return newImage;
+}
+
 
 - (void) drawStupidText4:(NSString*) text
            toRect:(CGRect)    rect
@@ -417,6 +439,38 @@ int FONT_SIZE_SMALL = 50;
     return newImage;
 }
 
+- (UIImage*) draw50_80:(NSMutableDictionary*) settings
+{
+    NSString* text1 = [settings objectForKey:@"text1"];
+    NSString* text2 = [settings objectForKey:@"text2"];
+    NSString* text3 = [settings objectForKey:@"text3"];
+    NSString* text4 = [settings objectForKey:@"text4"];
+
+    CGSize size = CGSizeMake(860, 480);
+    UIGraphicsBeginImageContext(size);
+    [[UIColor blackColor] set];
+    int xStart = 100;
+    int width = size.width - xStart;
+
+    NSString* fullName = [NSString stringWithFormat:@"%@ %@", text1, text2];
+    [self drawLine:fullName toRect:CGRectMake(xStart, 110, width, 75) fontSize:55 fontWeight:UIFontWeightHeavy alignment:NSTextAlignmentLeft];
+    [self drawLine:[text3 uppercaseString] toRect:CGRectMake(xStart, 190, width, 55) fontSize:35 fontWeight:UIFontWeightMedium alignment:NSTextAlignmentLeft];
+
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    [path moveToPoint:CGPointMake(xStart, 370)];
+    [path addLineToPoint:CGPointMake(150, 370)];
+    path.lineWidth = 5;
+    [[UIColor blackColor] setStroke];
+    [path stroke];
+
+    [self drawLine:[text4 uppercaseString] toRect:CGRectMake(xStart, 400, width, 55) fontSize:35 fontWeight:UIFontWeightMedium alignment:NSTextAlignmentLeft];
+
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return newImage;
+}
+
 - (UIImage*) draw62_2fields:(NSMutableDictionary*) settings
 {
     // TODO dymanic fields
@@ -523,11 +577,17 @@ int FONT_SIZE_SMALL = 50;
     else if ([preset isEqualToString:@"38_90"]){
         newImage = [self draw38_90:settings];
     }
+    else if ([preset isEqualToString:@"38_90_4fields"]){
+        newImage = [self draw38_90_4fields:settings];
+    }
     else if ([preset isEqualToString:@"17_54"]){
         newImage = [self draw17_54:settings];
     }
     else if ([preset isEqualToString:@"17_87"]){
         newImage = [self draw17_87:settings];
+    }
+    else if ([preset isEqualToString:@"50_80"]) {
+        newImage = [self draw50_80:settings];
     }
     else if ([preset isEqualToString:@"62_2fields"]) {
         newImage = [self draw62_2fields:settings];
