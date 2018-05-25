@@ -3,7 +3,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
         id="sk.entropia.cordova.brother-print"
-        version="0.0.5">
+        version="0.1.0">
 
     <name>Brother QL-720NW Printer</name>
 
@@ -16,7 +16,7 @@
     </repo>
 
     <keywords>
-        print, printer, ios, QL-720NW, Brother,
+        print, printer, ios, QL-720NW, QL-810W, Brother,
     </keywords>
 
     <license>Apache 2.0</license>
@@ -44,8 +44,8 @@
 
         <header-file src="src/ios/APPPrinter.h" />
         <source-file src="src/ios/APPPrinter.m" />
-        <resource-file src="res/ios/bsq72wad.ptd" target="Res/bsq72wad.ptd" />
         <framework src="res/ios/BRPtouchPrinterKit.framework" custom="true"/>
         <framework src="SystemConfiguration.framework" />
+        <framework src="ExternalAccessory.framework" />
     </platform>
 </plugin>

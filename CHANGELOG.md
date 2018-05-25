@@ -14,3 +14,6 @@ added 17mm x 87mm and 62mm 2-field presets
 
 #### Version 0.0.5 (5.3.2017)
 added 50mm x 80mm and 38mm x 90mm 4-field presets
+
+#### Version 0.1.0 (25.5.2018)
+updated to BRPtouchPrinterKit framework 3.1.6

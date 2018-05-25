@@ -2,7 +2,7 @@
 #import <Cordova/CDVAvailability.h>
 #import <BRPtouchPrinterKit/BRPtouchPrintInfo.h>
 #import <BRPtouchPrinterKit/BRPtouchPrinter.h>
-#import <BRPtouchPrinterKit/BRPtouchNetworkInfo.h>
+#import <BRPtouchPrinterKit/BRPtouchDeviceInfo.h>
 
 
 @interface APPPrinter ()
@@ -89,7 +89,7 @@ int FONT_SIZE_SMALL = 50;
     BRPtouchPrintInfo* printInfo = [self _getPrintInfo:[settings objectForKey:@"paper"] orientation:orientation];
 
     //	BRPtouchPrinter Class initialize (Release will be done in [dealloc])
-    ptp = [[BRPtouchPrinter alloc] initWithPrinterName:[settings objectForKey:@"name"]];
+    ptp = [[BRPtouchPrinter alloc] initWithPrinterName:[settings objectForKey:@"name"] interface:CONNECTION_TYPE_WLAN];
     [ptp setPrintInfo:printInfo];
     [ptp setIPAddress:[settings objectForKey:@"ipAddress"]];
 
@@ -121,10 +121,10 @@ int FONT_SIZE_SMALL = 50;
 
 - (void) searchPrinters
 {
-    ptn = [[BRPtouchNetwork alloc] init];
+    ptn = [[BRPtouchNetworkManager alloc] init];
     ptn.delegate = self;
 
-    NSArray *printerList = [NSArray arrayWithObjects:@"Brother QL-720NW", nil];
+    NSArray *printerList = [NSArray arrayWithObjects:@"Brother QL-720NW", @"Brother QL-810W", nil];
     [ptn setPrinterNames:printerList];
     [ptn startSearch: 5.0];
 }
@@ -615,18 +615,31 @@ int FONT_SIZE_SMALL = 50;
     // Do print
     NSString* resultStr;
     BOOL error = NO;
-    if ([ptp isPrinterReady]) {
-        NSLog(@"Ready");
-        int result = [ptp printImage:imgRef copy:1 timeout:10];
 
-        if (result <= 0) {
-            NSLog(@"Result: %d", result);
-            resultStr = @"error_other";
-            error = YES;
+    if ([ptp isPrinterReady] && !communicationStarted) {
+        NSLog(@"Ready");
+        communicationStarted = [ptp startCommunication];
+        if (communicationStarted) {
+            NSLog(@"Cumunication started %d", communicationStarted);
+            int result = [ptp printImage:imgRef copy:1];
+
+            if (result < 0) {
+                NSLog(@"Result: %d", result);
+                resultStr = @"error_other";
+                error = YES;
+            }
+            else {
+                NSLog(@"Print successful");
+            }
         }
         else {
-            NSLog(@"Print successful");
+            NSLog(@"Communication not started");
+            resultStr = @"error_notready";
+            error = YES;
         }
+        [ptp endCommunication];
+        communicationStarted = FALSE;
+        NSLog(@"Communication ended");
     }
     else {
         NSLog(@"Not ready");
@@ -648,12 +661,12 @@ int FONT_SIZE_SMALL = 50;
     return YES;
 }
 
--(void)didFinishedSearch:(id)sender
+-(void)didFinishSearch:(id)sender
 {
     NSMutableArray* aryListData = (NSMutableArray*)[ptn getPrinterNetInfo];
     NSMutableArray *printers =[NSMutableArray array];
 
-    for (BRPtouchNetworkInfo* bpni in aryListData) {
+    for (BRPtouchDeviceInfo* bpni in aryListData) {
         NSMutableDictionary* printerDict = [NSMutableDictionary dictionaryWithCapacity:2];
         [printerDict setObject:bpni.strModelName forKey:@"name"];
         [printerDict setObject:bpni.strIPAddress forKey:@"ipAddress"];
