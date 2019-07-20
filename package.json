@@ -5,7 +5,7 @@
   "cordova": {
     "id": "sk.entropia.cordova.brother-print",
     "platforms": [
-      "ios",
+      "ios"
     ]
   },
   "repository": {
@@ -19,7 +19,7 @@
     "brother",
     "ecosystem:cordova",
     "cordova-ios",
-    "QL-720NW",
+    "QL-720NW"
   ],
   "engines": [
     {
